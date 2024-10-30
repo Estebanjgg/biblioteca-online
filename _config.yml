@@ -1,0 +1,9 @@
+title: "Biblioteca Online"
+description: "Un sitio de ejemplo para una biblioteca en línea"
+baseurl: "/biblioteca-online" # Esto coincide con el nombre de tu repositorio
+url: "https://estebanjgg.github.io" # La URL principal de tu sitio en GitHub Pages
+theme: minima # Cambia 'minima' si estás usando otro tema, o puedes dejarlo como base
+
+markdown: kramdown
+plugins:
+  - jekyll-feed
