@@ -1,8 +1,8 @@
 title: "Biblioteca Online"
 description: "Un sitio de ejemplo para una biblioteca en línea"
-baseurl: "/biblioteca-online" 
+baseurl: "/biblioteca-online"
 url: "https://estebanjgg.github.io"
 theme: minima
-
-# Indicamos la carpeta de origen para Jekyll
-source: src
+markdown: kramdown
+plugins:
+  - jekyll-feed
