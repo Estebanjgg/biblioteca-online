@@ -13,4 +13,4 @@ Este es un sistema de gestión de una biblioteca virtual donde puedes administra
 - Préstamos y Compras
 - Dashboard con estadísticas
 
-Explora la aplicación y descubre cómo gestionar tu biblioteca digital de manera eficiente.
+Explora la aplicación y descubre cómo gestionar tu biblioteca digital de manera eficiente.git add .
