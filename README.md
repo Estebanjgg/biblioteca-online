@@ -1,70 +1,87 @@
-# Getting Started with Create React App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# Biblioteca Virtual
 
-## Available Scripts
+Este es un sistema de gestión de una biblioteca virtual donde puedes administrar libros, autores, categorías, usuarios y préstamos. La aplicación permite la creación, edición y eliminación de registros y proporciona un panel de control (Dashboard) para obtener una visión general de la actividad de la biblioteca.
 
-In the project directory, you can run:
+## Tabla de Contenidos
 
-### `npm start`
+- [Características](#características)
+- [Tecnologías](#tecnologías)
+- [Instalación](#instalación)
+- [Estructura del Proyecto](#estructura-del-proyecto)
+- [Uso](#uso)
+- [Contribución](#contribución)
+- [Licencia](#licencia)
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Características
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- **CRUD de Libros**: Añadir, editar y eliminar información de libros, incluyendo precios de compra y alquiler.
+- **CRUD de Autores y Categorías**: Gestionar autores y categorías con facilidad.
+- **Gestión de Usuarios**: Registro y edición de usuarios de la biblioteca.
+- **Préstamos y Compras**: Sistema de préstamos con fecha de devolución y cálculo de multas por retraso. Incluye un sistema de descuentos para usuarios frecuentes.
+- **Dashboard**: Panel de control con gráficos y estadísticas sobre los préstamos, categorías más populares, y libros más prestados.
+- **Footer Responsivo**: Footer atractivo con enlaces a redes sociales y derechos reservados.
 
-### `npm test`
+## Tecnologías
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Este proyecto está construido con las siguientes tecnologías:
 
-### `npm run build`
+- **React**: Framework principal para la interfaz de usuario.
+- **Material-UI**: Biblioteca de componentes para el diseño visual.
+- **React Router**: Manejo de rutas para navegar entre páginas.
+- **Recharts**: Biblioteca para generar gráficos en el Dashboard.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Instalación
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+1. Clona el repositorio:
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+   ```bash
+   git clone https://github.com/Estebanjgg/biblioteca-online.git
+   ```
+2. Instala las dependencias:
 
-### `npm run eject`
+   ```bash
+   npm install
+   ```
+3. Inicia el servidor de desarrollo:
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+   ```bash
+   npm start
+   ```
+4. Abre [http://localhost:3000](http://localhost:3000) en tu navegador para ver la aplicación.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Estructura del Proyecto
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+```plaintext
+biblioteca-virtual/
+├── public/                  # Archivos públicos
+├── src/
+│   ├── components/          # Componentes reutilizables como Navbar, Footer
+│   ├── pages/               # Páginas principales de la aplicación
+│   ├── services/            # Servicios para la gestión de datos
+│   ├── validators/          # Validadores de formularios
+│   ├── App.js               # Componente principal
+│   └── index.js             # Punto de entrada
+└── README.md                # Documentación del proyecto
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## Uso
 
-## Learn More
+1. **Dashboard**: Visualiza un resumen de la actividad de la biblioteca, con gráficos de categorías y préstamos.
+2. **Gestión de Libros**: Añade o edita información sobre libros. Incluye precios específicos para compra y alquiler.
+3. **Préstamos y Compras**: Registra préstamos con fecha de devolución. Se calcula automáticamente una multa del 5% por retrasos en la devolución y se aplica un descuento del 15% para usuarios frecuentes al comprar libros.
+4. **Gestión de Usuarios**: Administra usuarios y verifica si son usuarios frecuentes.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Contribución
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Si deseas contribuir al proyecto:
 
-### Code Splitting
+1. Haz un fork del repositorio.
+2. Crea una nueva branch (`git checkout -b feature/nueva-funcionalidad`).
+3. Realiza tus cambios y haz commit (`git commit -am 'Agrega nueva funcionalidad'`).
+4. Haz push a la branch (`git push origin feature/nueva-funcionalidad`).
+5. Abre un Pull Request.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## Licencia
 
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Este proyecto está licenciado bajo la Licencia MIT. Puedes ver más detalles en el archivo LICENSE.
