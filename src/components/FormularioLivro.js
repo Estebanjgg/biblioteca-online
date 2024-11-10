@@ -5,6 +5,34 @@ import { TextField, Button, MenuItem, Alert } from '@mui/material';
 import { getAutores } from '../services/autorService';
 import { getCategorias } from '../services/categoriaService';
 import { validarLivro } from '../validators/livroValidator';
+import { NumericFormat } from 'react-number-format'; // Importação correta
+
+// Componente de formatação personalizado integrado no mesmo arquivo
+function NumberFormatCustom(props) {
+  const { onChange, name, ...other } = props;
+
+  return (
+    <NumericFormat
+      {...other}
+      name={name}
+      onValueChange={(values) => {
+        onChange({
+          target: {
+            name: name,
+            value: values.value,
+          },
+        });
+      }}
+      thousandSeparator="."
+      decimalSeparator=","
+      decimalScale={2}
+      fixedDecimalScale
+      allowNegative={false}
+      // Opcional: Adicione um prefixo como "R$ " se desejar
+      // prefix="R$ "
+    />
+  );
+}
 
 function FormularioLivro({ salvarLivro, livroEdit }) {
   const [livro, setLivro] = useState({
@@ -13,8 +41,8 @@ function FormularioLivro({ salvarLivro, livroEdit }) {
     categoria: '',
     dataPublicacao: '',
     quantidade: '',
-    purchasePrice: '',
-    rentalPrice: '',
+    purchasePrice: '0,00', // Inicializado com "0,00"
+    rentalPrice: '0,00',   // Inicializado com "0,00"
   });
 
   const [erros, setErros] = useState({});
@@ -37,9 +65,9 @@ function FormularioLivro({ salvarLivro, livroEdit }) {
         autor: livroEdit.autor || '',
         categoria: livroEdit.categoria || '',
         dataPublicacao: livroEdit.dataPublicacao || '',
-        quantidade: livroEdit.quantidade || '',
-        purchasePrice: livroEdit.purchasePrice || '',
-        rentalPrice: livroEdit.rentalPrice || '',
+        quantidade: livroEdit.quantidade !== undefined ? livroEdit.quantidade.toString() : '',
+        purchasePrice: livroEdit.purchasePrice !== undefined ? livroEdit.purchasePrice.toFixed(2).replace('.', ',') : '0,00',
+        rentalPrice: livroEdit.rentalPrice !== undefined ? livroEdit.rentalPrice.toFixed(2).replace('.', ',') : '0,00',
       });
     } else {
       setLivro({
@@ -48,8 +76,8 @@ function FormularioLivro({ salvarLivro, livroEdit }) {
         categoria: '',
         dataPublicacao: '',
         quantidade: '',
-        purchasePrice: '',
-        rentalPrice: '',
+        purchasePrice: '0,00',
+        rentalPrice: '0,00',
       });
     }
   }, [livroEdit]);
@@ -63,12 +91,12 @@ function FormularioLivro({ salvarLivro, livroEdit }) {
     const tempErros = validarLivro(livro);
     setErros(tempErros);
     if (Object.values(tempErros).every((x) => x === '')) {
-      // Converter campos numéricos
+      // Converter campos numéricos, substituindo vírgulas por pontos
       const livroParaSalvar = {
         ...livro,
-        quantidade: parseInt(livro.quantidade),
-        purchasePrice: parseFloat(livro.purchasePrice),
-        rentalPrice: parseFloat(livro.rentalPrice),
+        quantidade: parseInt(livro.quantidade, 10),
+        purchasePrice: parseFloat(livro.purchasePrice.replace(',', '.')),
+        rentalPrice: parseFloat(livro.rentalPrice.replace(',', '.')),
       };
       salvarLivro(livroEdit ? { ...livroEdit, ...livroParaSalvar } : livroParaSalvar);
       setLivro({
@@ -77,8 +105,8 @@ function FormularioLivro({ salvarLivro, livroEdit }) {
         categoria: '',
         dataPublicacao: '',
         quantidade: '',
-        purchasePrice: '',
-        rentalPrice: '',
+        purchasePrice: '0,00',
+        rentalPrice: '0,00',
       });
       setAlerta('');
     } else {
@@ -89,9 +117,10 @@ function FormularioLivro({ salvarLivro, livroEdit }) {
   return (
     <form onSubmit={handleSubmit}>
       {alerta && <Alert severity="error" sx={{ mb: 2 }}>{alerta}</Alert>}
+      
       <TextField
         name="titulo"
-        label="Título"
+        label="Título Livro"
         value={livro.titulo}
         onChange={handleChange}
         fullWidth
@@ -99,6 +128,7 @@ function FormularioLivro({ salvarLivro, livroEdit }) {
         error={!!erros.titulo}
         helperText={erros.titulo}
       />
+      
       <TextField
         select
         name="autor"
@@ -116,6 +146,7 @@ function FormularioLivro({ salvarLivro, livroEdit }) {
           </MenuItem>
         ))}
       </TextField>
+      
       <TextField
         select
         name="categoria"
@@ -133,6 +164,7 @@ function FormularioLivro({ salvarLivro, livroEdit }) {
           </MenuItem>
         ))}
       </TextField>
+      
       <TextField
         name="dataPublicacao"
         label="Data de Publicação"
@@ -147,6 +179,7 @@ function FormularioLivro({ salvarLivro, livroEdit }) {
         error={!!erros.dataPublicacao}
         helperText={erros.dataPublicacao}
       />
+      
       <TextField
         name="quantidade"
         label="Quantidade"
@@ -157,32 +190,37 @@ function FormularioLivro({ salvarLivro, livroEdit }) {
         margin="normal"
         error={!!erros.quantidade}
         helperText={erros.quantidade}
-        InputProps={{ inputProps: { min: 1 } }}
+        InputProps={{ inputProps: { min: 0 } }} // Permitindo quantidade zero se necessário
       />
+      
       <TextField
         name="purchasePrice"
         label="Preço de Compra"
-        type="number"
         value={livro.purchasePrice}
         onChange={handleChange}
         fullWidth
         margin="normal"
         error={!!erros.purchasePrice}
         helperText={erros.purchasePrice}
-        InputProps={{ inputProps: { min: 0, step: 0.01 } }}
+        InputProps={{
+          inputComponent: NumberFormatCustom, // Usa o componente personalizado
+        }}
       />
+      
       <TextField
         name="rentalPrice"
         label="Preço de Aluguel"
-        type="number"
         value={livro.rentalPrice}
         onChange={handleChange}
         fullWidth
         margin="normal"
         error={!!erros.rentalPrice}
         helperText={erros.rentalPrice}
-        InputProps={{ inputProps: { min: 0, step: 0.01 } }}
+        InputProps={{
+          inputComponent: NumberFormatCustom, // Usa o componente personalizado
+        }}
       />
+      
       <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
         Salvar
       </Button>

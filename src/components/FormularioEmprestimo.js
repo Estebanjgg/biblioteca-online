@@ -1,3 +1,5 @@
+// src/components/FormularioEmprestimo.js
+
 import React, { useState, useEffect } from 'react';
 import {
   TextField,
@@ -23,13 +25,13 @@ function FormularioEmprestimo({ salvarEmprestimo, emprestimoEdit }) {
     usuario: '',
     dataEmprestimo: '',
     dataDevolucao: '',
-    dataDevolucaoUsuario: '', // Novo campo
+    dataDevolucaoUsuario: '',
     quantidade: 1,
-    tipo: 'rental', // 'rental' ou 'purchase'
+    tipo: 'rental', 
     price: 0,
     discountApplied: false,
-    devuelto: false, // Novo campo
-    fineApplied: false, // Novo campo
+    devuelto: false,
+    fineApplied: false,
     paymentMethod: '',
   });
 
@@ -97,14 +99,16 @@ function FormularioEmprestimo({ salvarEmprestimo, emprestimoEdit }) {
         pricePerUnit = parseFloat(livroSelecionado.rentalPrice) || 0;
       }
 
-      let totalPrice = pricePerUnit * parseInt(emprestimo.quantidade);
+      let totalPrice = pricePerUnit * parseInt(emprestimo.quantidade, 10);
 
-      // Verificar se o usuário é frequente
-      const userTransactions = emprestimos.filter((e) => e.usuario === emprestimo.usuario).length;
+      // Verificar se o usuário é frequente (apenas compras)
+      const userPurchaseTransactions = emprestimos.filter(
+        (e) => e.usuario === emprestimo.usuario && e.tipo === 'purchase'
+      ).length;
 
       let discountApplied = false;
-      if (emprestimo.tipo === 'purchase' && userTransactions > 5) {
-        totalPrice = totalPrice * 0.85; // Aplicar 15% de desconto
+      if (emprestimo.tipo === 'purchase' && userPurchaseTransactions >= 2) {
+        totalPrice = parseFloat((totalPrice * 0.85).toFixed(2)); 
         discountApplied = true;
       }
 
@@ -148,7 +152,7 @@ function FormularioEmprestimo({ salvarEmprestimo, emprestimoEdit }) {
   const getDisponibilidade = (livroId) => {
     const livroSelecionado = livros.find((livro) => livro.id === livroId);
     const emprestimosLivro = emprestimos
-      .filter((e) => e.livroId === livroId && !e.devuelto)
+      .filter((e) => e.livroId === livroId && e.tipo === 'rental' && !e.devuelto)
       .reduce((total, e) => total + e.quantidade, 0);
 
     const disponiveis = livroSelecionado

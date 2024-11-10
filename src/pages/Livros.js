@@ -13,7 +13,6 @@ import {
 import ListaLivros from '../components/ListaLivros';
 import FormularioLivro from '../components/FormularioLivro';
 import { getLivros } from '../services/livroService';
-import livrosData from '../components/data/livros.json';
 
 function Livros() {
   const [livros, setLivros] = useState([]);
@@ -24,10 +23,12 @@ function Livros() {
   useEffect(() => {
     // Carregar livros
     const storedLivros = getLivros();
+    console.log('Livros carregados:', storedLivros);
     setLivros(storedLivros);
 
     // Carregar empréstimos
     const storedEmprestimos = JSON.parse(localStorage.getItem('emprestimos')) || [];
+    console.log('Empréstimos carregados:', storedEmprestimos);
     setEmprestimos(storedEmprestimos);
   }, []);
 
@@ -42,6 +43,7 @@ function Livros() {
     }
     setLivros(data);
     localStorage.setItem('livros', JSON.stringify(data));
+    console.log('Livros salvos no localStorage:', data);
     setOpen(false);
     setLivroEdit(null);
   };
@@ -66,6 +68,7 @@ function Livros() {
     const data = livros.filter((livro) => livro.id !== id);
     setLivros(data);
     localStorage.setItem('livros', JSON.stringify(data));
+    console.log('Livro excluído. Livros atualizados no localStorage:', data);
   };
 
   const handleClickOpen = () => {

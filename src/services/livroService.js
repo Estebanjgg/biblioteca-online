@@ -1,5 +1,3 @@
-// src/services/livroService.js
-
 import livrosData from '../components/data/livros.json';
 
 export const getLivros = () => {
@@ -7,7 +5,6 @@ export const getLivros = () => {
   if (storedLivros && storedLivros.length > 0) {
     return storedLivros;
   } else {
-    
     localStorage.setItem('livros', JSON.stringify(livrosData));
     return livrosData;
   }

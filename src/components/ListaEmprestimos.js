@@ -1,3 +1,5 @@
+// src/components/ListaEmprestimos.js
+
 import React from 'react';
 import {
   Table,
@@ -17,13 +19,15 @@ function ListaEmprestimos({
   excluirEmprestimo,
   marcarComoDevuelto,
 }) {
-  // Función para traducir el método de pago
+  // Função para traduzir o método de pagamento
   const traducirMetodoPago = (metodo) => {
     switch (metodo) {
       case 'cash':
-        return 'Efectivo';
+        return 'Dinheiro';
       case 'card':
-        return 'Tarjeta';
+        return 'Cartão';
+      case 'pix':
+        return 'PIX';
       default:
         return '-';
     }
@@ -41,7 +45,7 @@ function ListaEmprestimos({
           <TableCell>Data de Devolução do Usuário</TableCell>
           <TableCell>Estado</TableCell>
           <TableCell>Preço</TableCell>
-          <TableCell>Método de Pago</TableCell> {/* Nueva columna */}
+          <TableCell>Método de Pagamento</TableCell>
           <TableCell>Ações</TableCell>
         </TableRow>
       </TableHead>
@@ -64,7 +68,7 @@ function ListaEmprestimos({
                 : 'Emprestado'}
             </TableCell>
             <TableCell>
-              {emprestimo.price !== undefined ? `${emprestimo.price.toFixed(2)} ` : 'N/A'}
+              {emprestimo.price !== undefined ? `R$${emprestimo.price.toFixed(2)}` : 'N/A'}
               {emprestimo.discountApplied && ' (Desconto aplicado)'}
               {emprestimo.fineApplied && ' (Multa aplicada)'}
             </TableCell>

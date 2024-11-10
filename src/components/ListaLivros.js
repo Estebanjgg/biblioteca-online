@@ -15,17 +15,18 @@ import {
 import { Edit, Delete } from '@mui/icons-material';
 
 function ListaLivros({ livros, editarLivro, excluirLivro, emprestimos }) {
-  // Obter os IDs dos livros que estão emprestados e sua quantidade
+  // Obter as quantidades de empréstimos por livro
   const livrosEmprestados = {};
 
   emprestimos.forEach((e) => {
-    if (!e.devuelto) {
+    if (e.tipo === 'rental' && !e.devuelto) {
       if (livrosEmprestados[e.livroId]) {
-        livrosEmprestados[e.livroId] += 1;
+        livrosEmprestados[e.livroId] += e.quantidade;
       } else {
-        livrosEmprestados[e.livroId] = 1;
+        livrosEmprestados[e.livroId] = e.quantidade;
       }
     }
+    // Removemos a contagem de 'purchase' aqui para evitar dupla subtração
   });
 
   return (

@@ -12,7 +12,16 @@ import {
   TextField,
   Button,
   Typography,
+  Box,
+  Divider,
+  Alert,
+  Slide,
 } from '@mui/material';
+
+// Animación para la transición del modal
+const Transition = React.forwardRef(function Transition(props, ref) {
+  return <Slide direction="up" ref={ref} {...props} />;
+});
 
 function PagamentoModal({ open, onClose, emprestimo, finalizarPagamento }) {
   const [paymentMethod, setPaymentMethod] = useState('');
@@ -21,34 +30,36 @@ function PagamentoModal({ open, onClose, emprestimo, finalizarPagamento }) {
   const [step, setStep] = useState(1);
   const [error, setError] = useState('');
   const [price, setPrice] = useState(emprestimo ? parseFloat(emprestimo.price) : 0);
+  const [fineApplied, setFineApplied] = useState(emprestimo ? emprestimo.fineApplied : false);
 
   useEffect(() => {
-    setPaymentMethod('');
-    setAmountGiven('');
-    setChange(0);
-    setStep(1);
-    setError('');
+    if (open) {
+      // Resetear estados al abrir el modal
+      setPaymentMethod('');
+      setAmountGiven('');
+      setChange(0);
+      setStep(1);
+      setError('');
+      setPrice(emprestimo ? parseFloat(emprestimo.price) : 0);
+      setFineApplied(emprestimo ? emprestimo.fineApplied : false);
 
-    if (emprestimo) {
-      let finalPrice = parseFloat(emprestimo.price);
-      // Verificar se deve aplicar multa por atraso
-      if (emprestimo.tipo === 'rental' && !emprestimo.fineApplied) {
+      if (emprestimo && emprestimo.tipo === 'rental' && !emprestimo.fineApplied) {
         const dataDevolucao = new Date(emprestimo.dataDevolucao);
-        const dataDevolucaoUsuarioDate = new Date();
+        const dataActual = new Date();
 
-        if (dataDevolucaoUsuarioDate > dataDevolucao) {
-          const fine = finalPrice * 0.05;
-          finalPrice += fine;
-          emprestimo.fineApplied = true;
+        if (dataActual > dataDevolucao) {
+          const multa = parseFloat((emprestimo.price * 0.10).toFixed(2)); // 5% de multa
+          const nuevoPrecio = parseFloat((emprestimo.price + multa).toFixed(2));
+          setPrice(nuevoPrecio);
+          setFineApplied(true);
         }
       }
-      setPrice(finalPrice);
     }
-  }, [emprestimo]);
+  }, [emprestimo, open]);
 
   const handlePaymentMethodSelect = (e) => {
     setPaymentMethod(e.target.value);
-    if (e.target.value === 'card') {
+    if (e.target.value === 'card' || e.target.value === 'pix') {
       setStep(3);
     } else {
       setStep(2);
@@ -63,12 +74,17 @@ function PagamentoModal({ open, onClose, emprestimo, finalizarPagamento }) {
     const amount = parseFloat(amountGiven);
     const totalPrice = price;
 
-    if (amount < totalPrice) {
-      setError('O valor entregue é menor que o total a pagar.');
+    if (isNaN(amount)) {
+      setError('Por favor, ingrese un valor válido.');
       return;
     }
 
-    const changeAmount = amount - totalPrice;
+    if (amount < totalPrice) {
+      setError('El valor entregado es menor que el total a pagar.');
+      return;
+    }
+
+    const changeAmount = parseFloat((amount - totalPrice).toFixed(2));
     setChange(changeAmount);
     setError('');
     setStep(3);
@@ -78,65 +94,113 @@ function PagamentoModal({ open, onClose, emprestimo, finalizarPagamento }) {
     const dataDevolucaoUsuario = new Date().toISOString().split('T')[0];
     let updatedEmprestimo = {
       ...emprestimo,
-      devuelto: true,
-      dataDevolucaoUsuario,
+      devuelto: paymentMethod === 'pix' ? true : emprestimo.devuelto, // Considera pago PIX como devuelto automáticamente
+      dataDevolucaoUsuario: paymentMethod === 'pix' ? dataDevolucaoUsuario : emprestimo.dataDevolucaoUsuario,
       paymentMethod: paymentMethod,
       price: price,
+      fineApplied: fineApplied, // Asegurar que la multa aplicada se guarde
     };
     finalizarPagamento(updatedEmprestimo);
+    onClose();
   };
 
-  return (
-    <Dialog open={open} onClose={onClose}>
-      <DialogTitle>Processar Pagamento</DialogTitle>
-      <DialogContent>
-        {step === 1 && (
+  const renderStepContent = () => {
+    switch (step) {
+      case 1:
+        return (
           <FormControl component="fieldset">
-            <FormLabel component="legend">Meio de Pagamento</FormLabel>
+            <FormLabel component="legend">Método de Pago</FormLabel>
             <RadioGroup
               name="paymentMethod"
               value={paymentMethod}
               onChange={handlePaymentMethodSelect}
             >
-              <FormControlLabel value="cash" control={<Radio />} label="Dinheiro" />
-              <FormControlLabel value="card" control={<Radio />} label="Cartão" />
+              <FormControlLabel value="cash" control={<Radio />} label="Efectivo" />
+              <FormControlLabel value="card" control={<Radio />} label="Tarjeta" />
+              <FormControlLabel value="pix" control={<Radio />} label="PIX" />
             </RadioGroup>
           </FormControl>
-        )}
-        {step === 2 && (
-          <>
-            <Typography>Valor a pagar: {price.toFixed(2)}</Typography>
+        );
+      case 2:
+        return (
+          <Box mt={2}>
+            <Typography variant="h6" gutterBottom>
+              Total a Pagar: <strong>${price.toFixed(2)}</strong>
+            </Typography>
             <TextField
-              label="Valor entregue pelo cliente"
+              label="Cantidad Entregada"
               type="number"
               value={amountGiven}
               onChange={handleAmountGiven}
               fullWidth
+              margin="normal"
+              inputProps={{ min: "0", step: "0.01" }}
             />
-            {error && <Typography color="error">{error}</Typography>}
-            <Button variant="contained" color="primary" onClick={handleProcessPayment}>
-              Processar Pagamento
-            </Button>
-          </>
-        )}
-        {step === 3 && (
-          <>
-            <Typography>Pagamento realizado com sucesso!</Typography>
-            <Typography>
-              Meio de Pagamento: {paymentMethod === 'cash' ? 'Dinheiro' : 'Cartão'}
+            {error && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {error}
+              </Alert>
+            )}
+            <Box display="flex" justifyContent="flex-end">
+              <Button variant="contained" color="primary" onClick={handleProcessPayment}>
+                Procesar Pago
+              </Button>
+            </Box>
+          </Box>
+        );
+      case 3:
+        return (
+          <Box mt={2}>
+            <Alert severity="success" sx={{ mb: 2 }}>
+              ¡Pago realizado con éxito!
+            </Alert>
+            <Typography variant="subtitle1" gutterBottom>
+              <strong>Método de Pago:</strong>{' '}
+              {paymentMethod === 'cash'
+                ? 'Efectivo'
+                : paymentMethod === 'card'
+                ? 'Tarjeta'
+                : 'PIX'}
             </Typography>
             {paymentMethod === 'cash' && (
               <>
-                <Typography>Valor pago: {parseFloat(amountGiven).toFixed(2)}</Typography>
-                <Typography>Troco: {change.toFixed(2)}</Typography>
+                <Typography variant="subtitle1" gutterBottom>
+                  <strong>Cantidad Pagada:</strong> ${parseFloat(amountGiven).toFixed(2)}
+                </Typography>
+                <Typography variant="subtitle1" gutterBottom>
+                  <strong>Vuelto:</strong> ${change.toFixed(2)}
+                </Typography>
               </>
             )}
-            <Button variant="contained" color="primary" onClick={handleFinish}>
-              Finalizar
-            </Button>
-          </>
-        )}
-      </DialogContent>
+            {paymentMethod === 'pix' && (
+              <Typography variant="subtitle1" gutterBottom>
+                El pago vía PIX se ha procesado correctamente.
+              </Typography>
+            )}
+            <Divider sx={{ my: 2 }} />
+            <Box display="flex" justifyContent="flex-end">
+              <Button variant="contained" color="primary" onClick={handleFinish}>
+                Finalizar
+              </Button>
+            </Box>
+          </Box>
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <Dialog
+      open={open}
+      onClose={onClose}
+      TransitionComponent={Transition}
+      fullWidth
+      maxWidth="sm"
+      aria-labelledby="pagamento-modal-title"
+    >
+      <DialogTitle id="pagamento-modal-title">Procesar Pago</DialogTitle>
+      <DialogContent dividers>{renderStepContent()}</DialogContent>
     </Dialog>
   );
 }

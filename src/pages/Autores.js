@@ -1,4 +1,3 @@
-// src/pages/Autores.js
 import React, { useState, useEffect } from 'react';
 import {
   Container,
@@ -11,7 +10,7 @@ import {
 } from '@mui/material';
 import ListaAutores from '../components/ListaAutores';
 import FormularioAutor from '../components/FormularioAutor';
-import autoresData from '../components/data/autores.json'; // Importando o arquivo JSON
+import autoresData from '../components/data/autores.json'; 
 
 function Autores() {
   const [autores, setAutores] = useState([]);

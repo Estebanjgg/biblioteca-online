@@ -37,6 +37,20 @@ function Emprestimos() {
       emprestimo.dataDevolucaoUsuario = emprestimo.tipo === 'purchase' ? emprestimo.dataEmprestimo : '';
       emprestimo.fineApplied = false;
       data.push(emprestimo);
+
+      // Atualizar quantidade do livro se tipo for purchase
+      if (emprestimo.tipo === 'purchase') {
+        const storedLivros = JSON.parse(localStorage.getItem('livros')) || [];
+        const livroIndex = storedLivros.findIndex((livro) => livro.id === emprestimo.livroId);
+        if (livroIndex !== -1) {
+          storedLivros[livroIndex].quantidade -= emprestimo.quantidade;
+          // Garantir que a quantidade não fique negativa
+          if (storedLivros[livroIndex].quantidade < 0) {
+            storedLivros[livroIndex].quantidade = 0;
+          }
+          localStorage.setItem('livros', JSON.stringify(storedLivros));
+        }
+      }
     }
     setEmprestimos(data);
     localStorage.setItem('emprestimos', JSON.stringify(data));
@@ -50,7 +64,19 @@ function Emprestimos() {
   };
 
   const excluirEmprestimo = (id) => {
-    const data = emprestimos.filter((emprestimo) => emprestimo.id !== id);
+    const emprestimo = emprestimos.find((e) => e.id === id);
+    let data = emprestimos.filter((emprestimo) => emprestimo.id !== id);
+
+    // Se o empréstimo for do tipo purchase, aumentar a quantidade do livro
+    if (emprestimo.tipo === 'purchase') {
+      const storedLivros = JSON.parse(localStorage.getItem('livros')) || [];
+      const livroIndex = storedLivros.findIndex((livro) => livro.id === emprestimo.livroId);
+      if (livroIndex !== -1) {
+        storedLivros[livroIndex].quantidade += emprestimo.quantidade;
+        localStorage.setItem('livros', JSON.stringify(storedLivros));
+      }
+    }
+
     setEmprestimos(data);
     localStorage.setItem('emprestimos', JSON.stringify(data));
   };
@@ -70,6 +96,17 @@ function Emprestimos() {
     });
     setEmprestimos(data);
     localStorage.setItem('emprestimos', JSON.stringify(data));
+
+    // Se o empréstimo for do tipo 'rental' e foi devolvido, aumentar a quantidade do livro
+    if (updatedEmprestimo.tipo === 'rental' && updatedEmprestimo.devuelto) {
+      const storedLivros = JSON.parse(localStorage.getItem('livros')) || [];
+      const livroIndex = storedLivros.findIndex((livro) => livro.id === updatedEmprestimo.livroId);
+      if (livroIndex !== -1) {
+        storedLivros[livroIndex].quantidade += updatedEmprestimo.quantidade;
+        localStorage.setItem('livros', JSON.stringify(storedLivros));
+      }
+    }
+
     setOpenPagamento(false);
     setEmprestimoParaPagamento(null);
   };
@@ -92,7 +129,7 @@ function Emprestimos() {
         padding: 3,
         mt: 4,
         boxShadow: 3,
-        maxWidth: '90%', // Ajuste conforme necessário
+        maxWidth: '90%', 
       }}
     >
       <Typography
@@ -101,7 +138,7 @@ function Emprestimos() {
         align="center"
         sx={{ fontWeight: 'bold', color: '#3a3a3a' }}
       >
-        Lista de Empréstimos e Vendas
+        Lista de Aluguel e Vendas
       </Typography>
       <Box display="flex" justifyContent="center" mb={3}>
         <Button
@@ -114,7 +151,7 @@ function Emprestimos() {
             '&:hover': { backgroundColor: '#388e3c' },
           }}
         >
-          Novo Empréstimo
+          Novo Pedido
         </Button>
       </Box>
       <Box
@@ -122,9 +159,9 @@ function Emprestimos() {
         display="flex"
         justifyContent="center"
         sx={{
-          maxHeight: '500px', // Define a altura máxima da lista de empréstimos
-          overflowY: 'auto',   // Habilita a rolagem vertical quando necessário
-          width: '100%',       // Garante que a tabela ocupe toda a largura disponível
+          maxHeight: '500px', 
+          overflowY: 'auto',   
+          width: '100%',       
         }}
       >
         <ListaEmprestimos
