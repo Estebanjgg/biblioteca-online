@@ -1,7 +1,15 @@
 // src/validators/autorValidator.js
 
 export const validarAutor = (autor) => {
-  let temp = {};
-  temp.nome = autor.nome ? '' : 'O nome é obrigatório.';
-  return temp;
+  const erros = {};
+
+  if (!autor.nome || autor.nome.trim() === '') {
+    erros.nome = 'O nome é obrigatório.';
+  }
+
+  if (!autor.nacionalidade || autor.nacionalidade.trim() === '') {
+    erros.nacionalidade = 'A nacionalidade é obrigatória.';
+  }
+
+  return erros;
 };

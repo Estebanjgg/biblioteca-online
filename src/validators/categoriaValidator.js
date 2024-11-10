@@ -1,7 +1,15 @@
 // src/validators/categoriaValidator.js
 
 export const validarCategoria = (categoria) => {
-  let temp = {};
-  temp.nome = categoria.nome ? '' : 'O nome é obrigatório.';
-  return temp;
+  const erros = {};
+
+  if (!categoria.nome || categoria.nome.trim() === '') {
+    erros.nome = 'O nome é obrigatório.';
+  }
+
+  if (!categoria.descricao || categoria.descricao.trim() === '') {
+    erros.descricao = 'A descrição é obrigatória.';
+  }
+
+  return erros;
 };

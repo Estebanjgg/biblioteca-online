@@ -1,18 +1,35 @@
+// src/validators/livroValidator.js
+
 export const validarLivro = (livro) => {
-  let temp = {};
-  temp.titulo = livro.titulo ? '' : 'O título é obrigatório.';
-  temp.autor = livro.autor ? '' : 'O autor é obrigatório.';
-  temp.categoria = livro.categoria ? '' : 'A categoria é obrigatória.';
-  temp.dataPublicacao = livro.dataPublicacao ? '' : 'A data de publicação é obrigatória.';
-  temp.quantidade =
-    livro.quantidade && parseInt(livro.quantidade) > 0 ? '' : 'A quantidade deve ser maior que 0.';
-  temp.purchasePrice =
-    livro.purchasePrice && parseFloat(livro.purchasePrice) >= 0
-      ? ''
-      : 'O preço de compra deve ser maior ou igual a 0.';
-  temp.rentalPrice =
-    livro.rentalPrice && parseFloat(livro.rentalPrice) >= 0
-      ? ''
-      : 'O preço de aluguel deve ser maior ou igual a 0.';
-  return temp;
+  const erros = {};
+
+  if (!livro.titulo || livro.titulo.trim() === '') {
+    erros.titulo = 'O título é obrigatório.';
+  }
+
+  if (!livro.autor || livro.autor.trim() === '') {
+    erros.autor = 'O autor é obrigatório.';
+  }
+
+  if (!livro.categoria || livro.categoria.trim() === '') {
+    erros.categoria = 'A categoria é obrigatória.';
+  }
+
+  if (!livro.dataPublicacao) {
+    erros.dataPublicacao = 'A data de publicação é obrigatória.';
+  }
+
+  if (!livro.quantidade || livro.quantidade < 1) {
+    erros.quantidade = 'A quantidade deve ser pelo menos 1.';
+  }
+
+  if (!livro.purchasePrice || livro.purchasePrice < 0) {
+    erros.purchasePrice = 'O preço de compra deve ser igual ou superior a 0.';
+  }
+
+  if (!livro.rentalPrice || livro.rentalPrice < 0) {
+    erros.rentalPrice = 'O preço de aluguel deve ser igual ou superior a 0.';
+  }
+
+  return erros;
 };

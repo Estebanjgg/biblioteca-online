@@ -17,6 +17,18 @@ function ListaEmprestimos({
   excluirEmprestimo,
   marcarComoDevuelto,
 }) {
+  // Función para traducir el método de pago
+  const traducirMetodoPago = (metodo) => {
+    switch (metodo) {
+      case 'cash':
+        return 'Efectivo';
+      case 'card':
+        return 'Tarjeta';
+      default:
+        return '-';
+    }
+  };
+
   return (
     <Table>
       <TableHead>
@@ -29,6 +41,7 @@ function ListaEmprestimos({
           <TableCell>Data de Devolução do Usuário</TableCell>
           <TableCell>Estado</TableCell>
           <TableCell>Preço</TableCell>
+          <TableCell>Método de Pago</TableCell> {/* Nueva columna */}
           <TableCell>Ações</TableCell>
         </TableRow>
       </TableHead>
@@ -54,6 +67,11 @@ function ListaEmprestimos({
               {emprestimo.price !== undefined ? `${emprestimo.price.toFixed(2)} ` : 'N/A'}
               {emprestimo.discountApplied && ' (Desconto aplicado)'}
               {emprestimo.fineApplied && ' (Multa aplicada)'}
+            </TableCell>
+            <TableCell>
+              {emprestimo.paymentMethod
+                ? traducirMetodoPago(emprestimo.paymentMethod)
+                : '-'}
             </TableCell>
             <TableCell>
               <Box display="flex" alignItems="center" gap={1}>

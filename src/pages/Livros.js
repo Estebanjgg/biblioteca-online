@@ -1,3 +1,5 @@
+// src/pages/Livros.js
+
 import React, { useState, useEffect } from 'react';
 import {
   Container,
@@ -10,6 +12,8 @@ import {
 } from '@mui/material';
 import ListaLivros from '../components/ListaLivros';
 import FormularioLivro from '../components/FormularioLivro';
+import { getLivros } from '../services/livroService';
+import livrosData from '../components/data/livros.json';
 
 function Livros() {
   const [livros, setLivros] = useState([]);
@@ -18,13 +22,16 @@ function Livros() {
   const [livroEdit, setLivroEdit] = useState(null);
 
   useEffect(() => {
-    const data = JSON.parse(localStorage.getItem('livros')) || [];
-    setLivros(data);
+    // Carregar livros
+    const storedLivros = getLivros();
+    setLivros(storedLivros);
 
-    const emprestimosData = JSON.parse(localStorage.getItem('emprestimos')) || [];
-    setEmprestimos(emprestimosData);
+    // Carregar empréstimos
+    const storedEmprestimos = JSON.parse(localStorage.getItem('emprestimos')) || [];
+    setEmprestimos(storedEmprestimos);
   }, []);
 
+  // Função para salvar ou atualizar um livro
   const salvarLivro = (livro) => {
     let data = [...livros];
     if (livro.id) {
@@ -39,12 +46,23 @@ function Livros() {
     setLivroEdit(null);
   };
 
+  // Função para editar um livro
   const editarLivro = (livro) => {
     setLivroEdit(livro);
     setOpen(true);
   };
 
+  // Função para excluir um livro
   const excluirLivro = (id) => {
+    // Antes de excluir, verificar se o livro está emprestado
+    const livroEmprestado = emprestimos.some(
+      (emprestimo) => emprestimo.livroId === id && !emprestimo.devuelto
+    );
+    if (livroEmprestado) {
+      alert('Não é possível excluir um livro que está emprestado.');
+      return;
+    }
+
     const data = livros.filter((livro) => livro.id !== id);
     setLivros(data);
     localStorage.setItem('livros', JSON.stringify(data));
@@ -68,6 +86,7 @@ function Livros() {
         padding: 3,
         mt: 4,
         boxShadow: 3,
+        maxWidth: '90%', // Ajuste conforme necessário
       }}
     >
       <Typography
@@ -92,7 +111,16 @@ function Livros() {
           Adicionar Novo Livro
         </Button>
       </Box>
-      <Box mb={2} display="flex" justifyContent="center">
+      <Box
+        mb={2}
+        display="flex"
+        justifyContent="center"
+        sx={{
+          maxHeight: '500px', // Define a altura máxima da lista de livros
+          overflowY: 'auto',   // Habilita a rolagem vertical quando necessário
+          width: '100%',       // Garante que a tabela ocupe toda a largura disponível
+        }}
+      >
         <ListaLivros
           livros={livros}
           editarLivro={editarLivro}
@@ -122,4 +150,5 @@ function Livros() {
     </Container>
   );
 }
+
 export default Livros;

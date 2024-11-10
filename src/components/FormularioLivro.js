@@ -1,5 +1,7 @@
+// src/components/FormularioLivro.js
+
 import React, { useState, useEffect } from 'react';
-import { TextField, Button, MenuItem } from '@mui/material';
+import { TextField, Button, MenuItem, Alert } from '@mui/material';
 import { getAutores } from '../services/autorService';
 import { getCategorias } from '../services/categoriaService';
 import { validarLivro } from '../validators/livroValidator';
@@ -16,12 +18,29 @@ function FormularioLivro({ salvarLivro, livroEdit }) {
   });
 
   const [erros, setErros] = useState({});
+  const [alerta, setAlerta] = useState('');
   const [autores, setAutores] = useState([]);
   const [categorias, setCategorias] = useState([]);
 
   useEffect(() => {
+    // Carregar autores e categorias ao montar o componente
+    const autoresData = getAutores();
+    setAutores(autoresData);
+
+    const categoriasData = getCategorias();
+    setCategorias(categoriasData);
+
+    // Se for edição, preencher o formulário com os dados do livro
     if (livroEdit) {
-      setLivro(livroEdit);
+      setLivro({
+        titulo: livroEdit.titulo || '',
+        autor: livroEdit.autor || '',
+        categoria: livroEdit.categoria || '',
+        dataPublicacao: livroEdit.dataPublicacao || '',
+        quantidade: livroEdit.quantidade || '',
+        purchasePrice: livroEdit.purchasePrice || '',
+        rentalPrice: livroEdit.rentalPrice || '',
+      });
     } else {
       setLivro({
         titulo: '',
@@ -33,12 +52,6 @@ function FormularioLivro({ salvarLivro, livroEdit }) {
         rentalPrice: '',
       });
     }
-
-    const autoresData = getAutores();
-    setAutores(autoresData);
-
-    const categoriasData = getCategorias();
-    setCategorias(categoriasData);
   }, [livroEdit]);
 
   const handleChange = (e) => {
@@ -50,7 +63,14 @@ function FormularioLivro({ salvarLivro, livroEdit }) {
     const tempErros = validarLivro(livro);
     setErros(tempErros);
     if (Object.values(tempErros).every((x) => x === '')) {
-      salvarLivro({ ...livro, quantidade: parseInt(livro.quantidade) });
+      // Converter campos numéricos
+      const livroParaSalvar = {
+        ...livro,
+        quantidade: parseInt(livro.quantidade),
+        purchasePrice: parseFloat(livro.purchasePrice),
+        rentalPrice: parseFloat(livro.rentalPrice),
+      };
+      salvarLivro(livroEdit ? { ...livroEdit, ...livroParaSalvar } : livroParaSalvar);
       setLivro({
         titulo: '',
         autor: '',
@@ -60,11 +80,15 @@ function FormularioLivro({ salvarLivro, livroEdit }) {
         purchasePrice: '',
         rentalPrice: '',
       });
+      setAlerta('');
+    } else {
+      setAlerta('Por favor, corrija os erros acima.');
     }
   };
 
   return (
     <form onSubmit={handleSubmit}>
+      {alerta && <Alert severity="error" sx={{ mb: 2 }}>{alerta}</Alert>}
       <TextField
         name="titulo"
         label="Título"
@@ -159,7 +183,7 @@ function FormularioLivro({ salvarLivro, livroEdit }) {
         helperText={erros.rentalPrice}
         InputProps={{ inputProps: { min: 0, step: 0.01 } }}
       />
-      <Button type="submit" variant="contained" color="primary">
+      <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
         Salvar
       </Button>
     </form>

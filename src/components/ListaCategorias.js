@@ -20,10 +20,10 @@ function ListaCategorias({ categorias, editarCategoria, excluirCategoria }) {
             <TableCell>{categoria.nome}</TableCell>
             <TableCell>{categoria.descricao}</TableCell>
             <TableCell>
-              <IconButton onClick={() => editarCategoria(categoria)}>
+              <IconButton onClick={() => editarCategoria(categoria)} aria-label="editar">
                 <Edit />
               </IconButton>
-              <IconButton onClick={() => excluirCategoria(categoria.id)}>
+              <IconButton onClick={() => excluirCategoria(categoria.id)} aria-label="excluir">
                 <Delete />
               </IconButton>
             </TableCell>

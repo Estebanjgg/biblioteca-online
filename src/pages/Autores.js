@@ -1,3 +1,4 @@
+// src/pages/Autores.js
 import React, { useState, useEffect } from 'react';
 import {
   Container,
@@ -10,6 +11,7 @@ import {
 } from '@mui/material';
 import ListaAutores from '../components/ListaAutores';
 import FormularioAutor from '../components/FormularioAutor';
+import autoresData from '../components/data/autores.json'; // Importando o arquivo JSON
 
 function Autores() {
   const [autores, setAutores] = useState([]);
@@ -17,9 +19,25 @@ function Autores() {
   const [autorEdit, setAutorEdit] = useState(null);
 
   useEffect(() => {
-    const data = JSON.parse(localStorage.getItem('autores')) || [];
-    setAutores(data);
+    const storedAutores = JSON.parse(localStorage.getItem('autores'));
+    if (storedAutores && storedAutores.length > 0) {
+      // Se houver autores no localStorage, mesclar com os do JSON para evitar duplicações
+      const mergedAutores = mergeAutores(storedAutores, autoresData);
+      setAutores(mergedAutores);
+      localStorage.setItem('autores', JSON.stringify(mergedAutores));
+    } else {
+      // Se o localStorage estiver vazio, carregar do JSON
+      setAutores(autoresData);
+      localStorage.setItem('autores', JSON.stringify(autoresData));
+    }
   }, []);
+
+  // Função para mesclar autores, evitando duplicações baseadas no nome
+  const mergeAutores = (stored, json) => {
+    const nomesExistentes = stored.map((autor) => autor.nome);
+    const novosAutores = json.filter((autor) => !nomesExistentes.includes(autor.nome));
+    return [...stored, ...novosAutores];
+  };
 
   const salvarAutor = (autor) => {
     let data = [...autores];

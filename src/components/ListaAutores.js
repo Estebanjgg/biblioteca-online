@@ -20,10 +20,10 @@ function ListaAutores({ autores, editarAutor, excluirAutor }) {
             <TableCell>{autor.nome}</TableCell>
             <TableCell>{autor.nacionalidade}</TableCell>
             <TableCell>
-              <IconButton onClick={() => editarAutor(autor)}>
+              <IconButton onClick={() => editarAutor(autor)} aria-label="editar">
                 <Edit />
               </IconButton>
-              <IconButton onClick={() => excluirAutor(autor.id)}>
+              <IconButton onClick={() => excluirAutor(autor.id)} aria-label="excluir">
                 <Delete />
               </IconButton>
             </TableCell>

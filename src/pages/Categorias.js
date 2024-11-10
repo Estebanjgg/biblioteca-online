@@ -1,3 +1,4 @@
+// src/pages/Categorias.js
 import React, { useState, useEffect } from 'react';
 import {
   Container,
@@ -10,6 +11,7 @@ import {
 } from '@mui/material';
 import ListaCategorias from '../components/ListaCategorias';
 import FormularioCategoria from '../components/FormularioCategoria';
+import categoriasData from '../components/data/categorias.json'; // Importando o arquivo JSON
 
 function Categorias() {
   const [categorias, setCategorias] = useState([]);
@@ -17,9 +19,25 @@ function Categorias() {
   const [categoriaEdit, setCategoriaEdit] = useState(null);
 
   useEffect(() => {
-    const data = JSON.parse(localStorage.getItem('categorias')) || [];
-    setCategorias(data);
+    const storedCategorias = JSON.parse(localStorage.getItem('categorias'));
+    if (storedCategorias && storedCategorias.length > 0) {
+      // Se houver categorias no localStorage, mesclar com as do JSON para evitar duplicações
+      const mergedCategorias = mergeCategorias(storedCategorias, categoriasData);
+      setCategorias(mergedCategorias);
+      localStorage.setItem('categorias', JSON.stringify(mergedCategorias));
+    } else {
+      // Se o localStorage estiver vazio, carregar do JSON
+      setCategorias(categoriasData);
+      localStorage.setItem('categorias', JSON.stringify(categoriasData));
+    }
   }, []);
+
+  // Função para mesclar categorias, evitando duplicações baseadas no nome
+  const mergeCategorias = (stored, json) => {
+    const nomesExistentes = stored.map((categoria) => categoria.nome);
+    const novasCategorias = json.filter((categoria) => !nomesExistentes.includes(categoria.nome));
+    return [...stored, ...novasCategorias];
+  };
 
   const salvarCategoria = (categoria) => {
     let data = [...categorias];

@@ -14,6 +14,7 @@ import { getLivros } from '../services/livroService';
 import { getUsuarios } from '../services/usuarioService';
 import { getEmprestimos } from '../services/emprestimoService';
 import { validarEmprestimo } from '../validators/emprestimoValidator';
+import PagamentoModal from './PagamentoModal';
 
 function FormularioEmprestimo({ salvarEmprestimo, emprestimoEdit }) {
   const [emprestimo, setEmprestimo] = useState({
@@ -29,6 +30,7 @@ function FormularioEmprestimo({ salvarEmprestimo, emprestimoEdit }) {
     discountApplied: false,
     devuelto: false, // Novo campo
     fineApplied: false, // Novo campo
+    paymentMethod: '',
   });
 
   const [erros, setErros] = useState({});
@@ -37,6 +39,8 @@ function FormularioEmprestimo({ salvarEmprestimo, emprestimoEdit }) {
   const [livros, setLivros] = useState([]);
   const [usuarios, setUsuarios] = useState([]);
   const [emprestimos, setEmprestimos] = useState([]);
+
+  const [openPagamento, setOpenPagamento] = useState(false);
 
   useEffect(() => {
     if (emprestimoEdit) {
@@ -49,6 +53,7 @@ function FormularioEmprestimo({ salvarEmprestimo, emprestimoEdit }) {
         dataDevolucaoUsuario: emprestimoEdit.dataDevolucaoUsuario || '',
         devuelto: emprestimoEdit.devuelto || false,
         fineApplied: emprestimoEdit.fineApplied || false,
+        paymentMethod: emprestimoEdit.paymentMethod || '',
       });
     } else {
       setEmprestimo({
@@ -64,6 +69,7 @@ function FormularioEmprestimo({ salvarEmprestimo, emprestimoEdit }) {
         discountApplied: false,
         devuelto: false,
         fineApplied: false,
+        paymentMethod: '',
       });
     }
 
@@ -102,26 +108,35 @@ function FormularioEmprestimo({ salvarEmprestimo, emprestimoEdit }) {
         discountApplied = true;
       }
 
-      salvarEmprestimo({
+      const novoEmprestimo = {
         ...emprestimo,
         price: totalPrice,
         discountApplied,
-        devuelto: emprestimo.tipo === 'purchase', // Se é compra, marca como devolvido
-      });
-      setEmprestimo({
-        livroId: '',
-        livroTitulo: '',
-        usuario: '',
-        dataEmprestimo: '',
-        dataDevolucao: '',
-        dataDevolucaoUsuario: '',
-        quantidade: 1,
-        tipo: 'rental',
-        price: 0,
-        discountApplied: false,
-        devuelto: false,
-        fineApplied: false,
-      });
+        devuelto: emprestimo.tipo === 'purchase', // Se for compra, marcar como devolvido
+        paymentMethod: '',
+      };
+
+      if (emprestimo.tipo === 'purchase') {
+        setEmprestimo(novoEmprestimo);
+        setOpenPagamento(true);
+      } else {
+        salvarEmprestimo(novoEmprestimo);
+        setEmprestimo({
+          livroId: '',
+          livroTitulo: '',
+          usuario: '',
+          dataEmprestimo: '',
+          dataDevolucao: '',
+          dataDevolucaoUsuario: '',
+          quantidade: 1,
+          tipo: 'rental',
+          price: 0,
+          discountApplied: false,
+          devuelto: false,
+          fineApplied: false,
+          paymentMethod: '',
+        });
+      }
     }
   };
 
@@ -143,102 +158,130 @@ function FormularioEmprestimo({ salvarEmprestimo, emprestimoEdit }) {
     return disponiveis;
   };
 
+  const finalizarPagamento = (updatedEmprestimo) => {
+    salvarEmprestimo(updatedEmprestimo);
+    setOpenPagamento(false);
+    setEmprestimo({
+      livroId: '',
+      livroTitulo: '',
+      usuario: '',
+      dataEmprestimo: '',
+      dataDevolucao: '',
+      dataDevolucaoUsuario: '',
+      quantidade: 1,
+      tipo: 'rental',
+      price: 0,
+      discountApplied: false,
+      devuelto: false,
+      fineApplied: false,
+      paymentMethod: '',
+    });
+  };
+
   return (
-    <form onSubmit={handleSubmit}>
-      <TextField
-        select
-        name="livroId"
-        label="Livro"
-        value={emprestimo.livroId}
-        onChange={(e) => {
-          const livroSelecionado = livros.find((livro) => livro.id === e.target.value);
-          setEmprestimo({
-            ...emprestimo,
-            livroId: e.target.value,
-            livroTitulo: livroSelecionado ? livroSelecionado.titulo : '',
-          });
-        }}
-        fullWidth
-        margin="normal"
-        error={!!erros.livroId}
-        helperText={
-          erros.livroId ||
-          (emprestimo.livroId &&
-            `Disponíveis: ${getDisponibilidade(emprestimo.livroId)}`)
-        }
-      >
-        {livros.map((livro) => (
-          <MenuItem key={livro.id} value={livro.id}>
-            {livro.titulo}
-          </MenuItem>
-        ))}
-      </TextField>
-      <TextField
-        select
-        name="usuario"
-        label="Usuário"
-        value={emprestimo.usuario}
-        onChange={handleChange}
-        fullWidth
-        margin="normal"
-        error={!!erros.usuario}
-        helperText={erros.usuario}
-      >
-        {usuarios.map((usuario) => (
-          <MenuItem key={usuario.id} value={usuario.nome}>
-            {usuario.nome}
-          </MenuItem>
-        ))}
-      </TextField>
-      <TextField
-        name="dataEmprestimo"
-        label={emprestimo.tipo === 'purchase' ? 'Data de Compra' : 'Data de Empréstimo'}
-        type="date"
-        value={emprestimo.dataEmprestimo}
-        onChange={handleChange}
-        fullWidth
-        margin="normal"
-        InputLabelProps={{
-          shrink: true,
-        }}
-        error={!!erros.dataEmprestimo}
-        helperText={erros.dataEmprestimo}
-      />
-      {emprestimo.tipo === 'rental' && (
+    <>
+      <form onSubmit={handleSubmit}>
         <TextField
-          name="dataDevolucao"
-          label="Data para Devolução"
+          select
+          name="livroId"
+          label="Livro"
+          value={emprestimo.livroId}
+          onChange={(e) => {
+            const livroSelecionado = livros.find((livro) => livro.id === e.target.value);
+            setEmprestimo({
+              ...emprestimo,
+              livroId: e.target.value,
+              livroTitulo: livroSelecionado ? livroSelecionado.titulo : '',
+            });
+          }}
+          fullWidth
+          margin="normal"
+          error={!!erros.livroId}
+          helperText={
+            erros.livroId ||
+            (emprestimo.livroId &&
+              `Disponíveis: ${getDisponibilidade(emprestimo.livroId)}`)
+          }
+        >
+          {livros.map((livro) => (
+            <MenuItem key={livro.id} value={livro.id}>
+              {livro.titulo}
+            </MenuItem>
+          ))}
+        </TextField>
+        <TextField
+          select
+          name="usuario"
+          label="Usuário"
+          value={emprestimo.usuario}
+          onChange={handleChange}
+          fullWidth
+          margin="normal"
+          error={!!erros.usuario}
+          helperText={erros.usuario}
+        >
+          {usuarios.map((usuario) => (
+            <MenuItem key={usuario.id} value={usuario.nome}>
+              {usuario.nome}
+            </MenuItem>
+          ))}
+        </TextField>
+        <TextField
+          name="dataEmprestimo"
+          label={emprestimo.tipo === 'purchase' ? 'Data de Compra' : 'Data de Empréstimo'}
           type="date"
-          value={emprestimo.dataDevolucao}
+          value={emprestimo.dataEmprestimo}
           onChange={handleChange}
           fullWidth
           margin="normal"
           InputLabelProps={{
             shrink: true,
           }}
-          error={!!erros.dataDevolucao}
-          helperText={erros.dataDevolucao}
+          error={!!erros.dataEmprestimo}
+          helperText={erros.dataEmprestimo}
         />
-      )}
-      <FormControl component="fieldset" margin="normal">
-        <FormLabel component="legend">Tipo de Transação</FormLabel>
-        <RadioGroup
-          row
-          name="tipo"
-          value={emprestimo.tipo}
-          onChange={(e) => {
-            setEmprestimo({ ...emprestimo, tipo: e.target.value });
-          }}
-        >
-          <FormControlLabel value="rental" control={<Radio />} label="Aluguel" />
-          <FormControlLabel value="purchase" control={<Radio />} label="Compra" />
-        </RadioGroup>
-      </FormControl>
-      {alerta && <Alert severity="error">{alerta}</Alert>}
-      <Button type="submit" variant="contained" color="primary">
-        Salvar
-      </Button>
-    </form>
+        {emprestimo.tipo === 'rental' && (
+          <TextField
+            name="dataDevolucao"
+            label="Data de Devolução"
+            type="date"
+            value={emprestimo.dataDevolucao}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            InputLabelProps={{
+              shrink: true,
+            }}
+            error={!!erros.dataDevolucao}
+            helperText={erros.dataDevolucao}
+          />
+        )}
+        <FormControl component="fieldset" margin="normal">
+          <FormLabel component="legend">Tipo de Transação</FormLabel>
+          <RadioGroup
+            row
+            name="tipo"
+            value={emprestimo.tipo}
+            onChange={(e) => {
+              setEmprestimo({ ...emprestimo, tipo: e.target.value });
+            }}
+          >
+            <FormControlLabel value="rental" control={<Radio />} label="Aluguel" />
+            <FormControlLabel value="purchase" control={<Radio />} label="Compra" />
+          </RadioGroup>
+        </FormControl>
+        {alerta && <Alert severity="error">{alerta}</Alert>}
+        <Button type="submit" variant="contained" color="primary">
+          Salvar
+        </Button>
+      </form>
+      <PagamentoModal
+        open={openPagamento}
+        onClose={() => setOpenPagamento(false)}
+        emprestimo={emprestimo}
+        finalizarPagamento={finalizarPagamento}
+      />
+    </>
   );
 }
 
